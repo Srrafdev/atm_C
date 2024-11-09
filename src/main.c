@@ -1,9 +1,18 @@
 #include "header.h"
 #include <stdio.h>
 #include <sqlite3.h>
+#include <ctype.h>
+#include <termios.h>
 
-void mainMenu(struct User u)
-{
+
+
+void clear_buffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+
+void mainMenu(struct User u){
     int option;
     system("clear");
     printf("\n\n\t\t======= ATM =======\n\n");
@@ -56,8 +65,11 @@ void mainMenu(struct User u)
 
 void initMenu(struct User *u)
 {
+    START:
+
     int r = 0;
     int option;
+
     system("clear");
     printf("\n\n\t\t======= ATM =======\n");
     printf("\n\t\t-->> Feel free to login / register :\n");
@@ -67,10 +79,12 @@ void initMenu(struct User *u)
     while (!r)
     {
         scanf("%d", &option);
-        switch (option)
-        {
+        clear_buffer();
+        switch (option){
         case 1:
-           // loginMenu(u->name, u->password);
+
+            Login(u);
+            //loginMenu(u->name, u->password);
             // if (strcmp(u->password, getPassword(*u)) == 0)
             // {
             //     printf("\n\nPassword Match!");
@@ -84,6 +98,7 @@ void initMenu(struct User *u)
             break;
         case 2:
             // student TODO : add your **Registration** function
+            Registration(u);
             // here
             r = 1;
             break;
@@ -92,69 +107,98 @@ void initMenu(struct User *u)
             break;
         default:
             printf("Insert a valid operation!\n");
+            goto START;
         }
     }
 };
 
 
-// int OpenDB(sqlite3 **db){
-//     int err;
+void Login(struct User *u){
+    START:
+    system("clear");
+    printf("\n              Bank Managment System\n              User Login:");
 
-//     err = sqlite3_open("./data/database.db", db);
-//     if (err != 0){
-//         printf("ERROR OPEN DATABASE");
-//         sqlite3_close(*db);
-//         return 1;
-//     } 
-    
-//   return 0;
-// }
-// int createDB(sqlite3 *db){
-//     int err;
-//     char *query = "CREATE TABLE IF NOT EXICSTS users("
-//                   "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-//                   "name TEXT NOT NULL,"
-//                   "password TEXT NOT NULL);";
+    while (fgets(u->name, 50, stdin) != NULL){
+        printf("\nYou entered: %s", u->name);
+        if (strcmp(u->name, "hh\n") != 0){
+            goto START;
+        }else{
+            break;
+        }  
+    }
+    clear_buffer();
 
-//     err = sqlite3_exec(db, query,NULL,NULL,NULL);
-//     if (err != 0){
-//         printf("ERROR EXEC TO DB");
-//         sqlite3_close(db);
-//         return err;
-//     }
+}
 
-//     return 0;
-// }
-  // err = sqlite3_exec(db, query,NULL,NULL,NULL);
-    // if (err != 0){
-    //     printf("ERROR EXEC DATABASE");
-    //     sqlite3_close(db);
-    //     return 1;
-    // }
+void Registration(struct User *u){
+    struct termios oflags, nflags;
+    START1:
+    system("clear");
+    printf("\n\n\n\t\t\t\t   Bank Management System\n\t\t\t\t\t User Login:");
+    char input[50] = "";
 
-    // sqlite3_close(db);
-    // return 0;
+    while (fgets(u->name, 50,stdin) != NULL){
+        u->name[strcspn(u->name, "\n")] = '\0';
+        if (isStrValid(u->name) == 0){
+            printf("\nnot valid: %s", u->name);
+            goto START1;
+        }else{
+            break;
+        } 
+    }
+    clear_buffer();
 
-// int OpenDB(sqlite3 **db) {
-//     int err = sqlite3_open("./data/database.db", db);
-//     if (err != SQLITE_OK) {
-//         printf("ERROR OPEN DATABASE: %s\n", sqlite3_errmsg(*db));
-//         sqlite3_close(*db);
-//         return 1;
-//     }
-//     return 0;
-// }
+      // disabling echo
+    tcgetattr(fileno(stdin), &oflags);
+    nflags = oflags;
+    nflags.c_lflag &= ~ECHO;
+    nflags.c_lflag |= ECHONL;
 
-// int ExecSQL(sqlite3 *db, const char *query) {
-//     char *msgErr = NULL;
-//     int err = sqlite3_exec(db, query, 0, 0, &msgErr);
-//     if (err != SQLITE_OK) {
-//         printf("ERROR EXEC QUERY: %s\n", msgErr);
-//         sqlite3_free(msgErr);
-//         return 1;
-//     }
-//     return 0;
-// }
+    if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0){
+        perror("tcsetattr");
+        return exit(1);
+    }
+
+    START2:
+    printf("\n\n\n\n\n\t\t\t\tEnter the password to login:");
+    while (fgets(u->password, 50,stdin) != NULL){
+        u->password[strcspn(u->password, "\n")] = '\0';
+        if (isStrValid(u->password) == 0){
+            printf("\nnot valid: %s", u->password);
+            goto START2;
+        } else{
+            break;
+        }
+    }
+    clear_buffer();
+     // restore terminal
+    if (tcsetattr(fileno(stdin), TCSANOW, &oflags) != 0){
+        perror("tcsetattr");
+        return exit(0);
+    }
+    char *valu[] = {u->name, u->password};
+    const char *query = "";
+    int err;
+    err = ExecQuery(query,2,valu);
+    if(err != 0){
+        printf("ERROR EXEC NAME AND PASWORD\n");
+    }
+    mainMenu(*u);
+}
+
+int isStrValid(const char *str){
+    int i;
+    if(strlen(str) > 49){
+        return 0;
+    }
+    for (i = 0; i < strlen(str); i++){
+        if (isalpha(str[i]) == 0){
+            return 0;
+        }
+    }
+    return 1;
+}
+
 
 int ExecQuery(const char *query, int numArgs, ...) {
     sqlite3 *db;
@@ -163,14 +207,14 @@ int ExecQuery(const char *query, int numArgs, ...) {
 
     rc = sqlite3_open("./data/database.db", &db);
     if (rc != 0) {
-        fprintf(stderr, "OPEN ERROR: %s\n", sqlite3_errmsg(db));
+        printf("OPEN ERROR:\n");
         sqlite3_close(db);
         return rc;
     }
 
     rc = sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
     if (rc != 0) {
-        fprintf(stderr, "PREPARE ERROR: %s\n", sqlite3_errmsg(db));
+        printf("PREPARE ERROR:\n");
         sqlite3_close(db);
         return rc;
     }
@@ -185,7 +229,7 @@ int ExecQuery(const char *query, int numArgs, ...) {
 
     rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
-        fprintf(stderr, "EXECUTION ERROR: %s\n", sqlite3_errmsg(db));
+        printf("EXECUTION ERROR:\n");
     }
 
     sqlite3_finalize(stmt);
@@ -201,13 +245,31 @@ int main() {
     const char *users = "CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, password TEXT NOT NULL);";
     err = ExecQuery(users,0);
     if(err != 0){
-        printf("ERROR CREAT TABLE USER");
+        printf("ERROR CREAT TABLE users");
         return 0;
     }
-    const char *accounts = "CREATE TABLE IF NOT EXISTS accounts(id INTEGER PRIMARY KEY AUTOINCREMENT,);";
+    const char *accounts = "CREATE TABLE IF NOT EXISTS accounts("
+                           "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                           "user_id INTEGER NOT NULL,"
+                           "name_user TEXT NOT NULL,"
+                           "country TEXT NOT NULL,"
+                           "phone TEXT NOT NULL,"
+                           "accountType TEXT NOT NULL,"
+                           "accountNbr INTEGER NOT NULL,"
+                           "amount INTEGER NOT NULL,"
+                           "detposit TEXT NOT NULL,"
+                           "withdraw TEXT NOT NULL,"
+                           "FOREIGN KEY (name_user) REFERENCES users(name),"
+                           "FOREIGN KEY (user_id) REFERENCES users(id));";
+
+    err = ExecQuery(accounts,0);
+    if(err != 0){
+        printf("ERROR CREAT TABLE accounts");
+        return 0;
+    }
 
 
-    // initMenu(&u);
+     initMenu(&u);
     // mainMenu(u);
     return 0;
 }

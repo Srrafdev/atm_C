@@ -1,0 +1,58 @@
+// int OpenDB(sqlite3 **db){
+//     int err;
+
+//     err = sqlite3_open("./data/database.db", db);
+//     if (err != 0){
+//         printf("ERROR OPEN DATABASE");
+//         sqlite3_close(*db);
+//         return 1;
+//     } 
+    
+//   return 0;
+// }
+// int createDB(sqlite3 *db){
+//     int err;
+//     char *query = "CREATE TABLE IF NOT EXICSTS users("
+//                   "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+//                   "name TEXT NOT NULL,"
+//                   "password TEXT NOT NULL);";
+
+//     err = sqlite3_exec(db, query,NULL,NULL,NULL);
+//     if (err != 0){
+//         printf("ERROR EXEC TO DB");
+//         sqlite3_close(db);
+//         return err;
+//     }
+
+//     return 0;
+// }
+  // err = sqlite3_exec(db, query,NULL,NULL,NULL);
+    // if (err != 0){
+    //     printf("ERROR EXEC DATABASE");
+    //     sqlite3_close(db);
+    //     return 1;
+    // }
+
+    // sqlite3_close(db);
+    // return 0;
+
+// int OpenDB(sqlite3 **db) {
+//     int err = sqlite3_open("./data/database.db", db);
+//     if (err != SQLITE_OK) {
+//         printf("ERROR OPEN DATABASE: %s\n", sqlite3_errmsg(*db));
+//         sqlite3_close(*db);
+//         return 1;
+//     }
+//     return 0;
+// }
+
+// int ExecSQL(sqlite3 *db, const char *query) {
+//     char *msgErr = NULL;
+//     int err = sqlite3_exec(db, query, 0, 0, &msgErr);
+//     if (err != SQLITE_OK) {
+//         printf("ERROR EXEC QUERY: %s\n", msgErr);
+//         sqlite3_free(msgErr);
+//         return 1;
+//     }
+//     return 0;
+// }

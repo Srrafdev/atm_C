@@ -38,3 +38,14 @@ const char *getPassword(struct User u);
 void createNewAcc(struct User u);
 void mainMenu(struct User u);
 void checkAllAccounts(struct User u);
+
+// my func
+
+void Login(struct User *u);
+void Registration(struct User *u);
+int isStrValid(const char *str);
+void clear_buffer();
+int isStrValid(const char *str);
+int ExecQuery(const char *query, int numArgs, ...);
+
+
