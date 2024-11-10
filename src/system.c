@@ -135,6 +135,25 @@ noAccount:
     success(u);
 }
 
+void CreateNewAccount(struct User u){
+    struct Record r;
+    START:
+    system("clear");
+    printf("\t\t\t===== New record =====\n");
+
+    printf("\nEnter today's date(mm/dd/yyyy):");
+     while (fgets(r.accountNbr, 10,stdin) != NULL){
+       // r.accountNbr[strcspn(r.accountNbr, "\n")] = '\0';
+        if (isStrValid(r.accountNbr) == 0){
+            printf("\nnot valid: %s", r.accountNbr);
+            goto START;
+        }else{
+            break;
+        } 
+    }
+    clear_buffer();
+}
+
 void checkAllAccounts(struct User u)
 {
     char userName[100];

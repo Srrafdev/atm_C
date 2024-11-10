@@ -56,3 +56,43 @@
 //     }
 //     return 0;
 // }
+
+
+char s[20] = "some string";
+char* query = sqlite3_mprintf("insert into tbl5 values ('%q');", s);
+
+
+snprintf(queryStr, MAX_QUERY_LENGTH,
+         "SELECT %s, COL2, COL3 FROM TABLE WHERE COL4='%s';", var, someValue);
+
+
+int main() {
+    sqlite3 *db;
+    sqlite3_stmt *stmt;
+    int rc;
+
+    rc = sqlite3_open("test.db", &db);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return 1;
+    }
+
+    const char *sql = "SELECT id, name FROM users;";
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to execute query: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return 1;
+    }
+
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+        int id = sqlite3_column_int(stmt, 0);
+        const unsigned char *name = sqlite3_column_text(stmt, 1);
+        printf("ID: %d, Name: %s\n", id, name);
+    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+
+   

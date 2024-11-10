@@ -63,8 +63,7 @@ void mainMenu(struct User u){
     }
 };
 
-void initMenu(struct User *u)
-{
+void initMenu(struct User *u){
     START:
 
     int r = 0;
@@ -82,18 +81,7 @@ void initMenu(struct User *u)
         clear_buffer();
         switch (option){
         case 1:
-
             Login(u);
-            //loginMenu(u->name, u->password);
-            // if (strcmp(u->password, getPassword(*u)) == 0)
-            // {
-            //     printf("\n\nPassword Match!");
-            // }
-            // else
-            // {
-            //     printf("\nWrong password!! or User Name\n");
-            //     exit(1);
-            // }
             r = 1;
             break;
         case 2:
@@ -112,28 +100,11 @@ void initMenu(struct User *u)
     }
 };
 
-
+// login user by name and password
 void Login(struct User *u){
-    START:
-    system("clear");
-    printf("\n              Bank Managment System\n              User Login:");
-
-    while (fgets(u->name, 50, stdin) != NULL){
-        printf("\nYou entered: %s", u->name);
-        if (strcmp(u->name, "hh\n") != 0){
-            goto START;
-        }else{
-            break;
-        }  
-    }
-    clear_buffer();
-
-}
-
-void Registration(struct User *u){
     struct termios oflags, nflags;
-    START1:
     system("clear");
+    START1:
     printf("\n\n\n\t\t\t\t   Bank Management System\n\t\t\t\t\t User Login:");
     char input[50] = "";
 
@@ -148,7 +119,7 @@ void Registration(struct User *u){
     }
     clear_buffer();
 
-      // disabling echo
+    // disabling echo
     tcgetattr(fileno(stdin), &oflags);
     nflags = oflags;
     nflags.c_lflag &= ~ECHO;
@@ -171,18 +142,113 @@ void Registration(struct User *u){
         }
     }
     clear_buffer();
+
      // restore terminal
     if (tcsetattr(fileno(stdin), TCSANOW, &oflags) != 0){
         perror("tcsetattr");
+        return exit(1);
+    }
+
+    int err;
+    sqlite3 *db;
+    err = sqlite3_open("./data/database.db", &db);
+    if (err != 0){
+        sqlite3_close(db);
+        printf("ERROR OPEN DB\n");
         return exit(0);
     }
-    char *valu[] = {u->name, u->password};
-    const char *query = "";
-    int err;
-    err = ExecQuery(query,2,valu);
-    if(err != 0){
-        printf("ERROR EXEC NAME AND PASWORD\n");
+    sqlite3_stmt* stm;
+    char* query = sqlite3_mprintf("SELECT id FROM users WHERE name = %Q AND password = %Q", u->name, u->password);
+    err = sqlite3_prepare_v2(db, query, -1, &stm, NULL);
+    if (err != 0){
+        sqlite3_close(db);
+        printf("ERROR PREPARE DB\n");
+        return exit(0);
     }
+    int id = 0;
+    while ((err = sqlite3_step(stm)) == SQLITE_ROW){
+         id = sqlite3_column_int(stm, 0);
+       // const unsigned char* name = sqlite3_column_text(stm,1); 
+    }
+    if(id == 0){
+        printf("invalid data\n");
+        goto START1;
+    }
+
+   sqlite3_finalize(stm);
+   sqlite3_free(query);
+   sqlite3_close(db);
+   mainMenu(*u);
+}
+
+// regester new user
+void Registration(struct User *u){
+    struct termios oflags, nflags;
+    system("clear");
+    START1:
+    printf("\n\n\n\t\t\t\t   Bank Management System\n\t\t\t\t\t User Login:");
+    char input[50] = "";
+
+    while (fgets(u->name, 50,stdin) != NULL){
+        u->name[strcspn(u->name, "\n")] = '\0';
+        if (isStrValid(u->name) == 0){
+            printf("\nnot valid: %s", u->name);
+            goto START1;
+        }else{
+            break;
+        } 
+    }
+    clear_buffer();
+
+    // disabling echo
+    tcgetattr(fileno(stdin), &oflags);
+    nflags = oflags;
+    nflags.c_lflag &= ~ECHO;
+    nflags.c_lflag |= ECHONL;
+
+    if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0){
+        perror("tcsetattr");
+        return exit(1);
+    }
+
+    START2:
+    printf("\n\n\n\n\n\t\t\t\tEnter the password to login:");
+    while (fgets(u->password, 50,stdin) != NULL){
+        u->password[strcspn(u->password, "\n")] = '\0';
+        if (isStrValid(u->password) == 0){
+            printf("\nnot valid: %s", u->password);
+            goto START2;
+        } else{
+            break;
+        }
+    }
+    clear_buffer();
+
+     // restore terminal
+    if (tcsetattr(fileno(stdin), TCSANOW, &oflags) != 0){
+        perror("tcsetattr");
+        return exit(1);
+    }
+
+    int err;
+    sqlite3 *db;
+    err = sqlite3_open("./data/database.db", &db);
+    if (err != 0){
+        sqlite3_close(db);
+        printf("ERROR OPEN DB\n");
+        return exit(0);
+    }
+
+    char* query = sqlite3_mprintf("INSERT INTO users(name, password) VALUES('%q','%q')", u->name,u->password);
+    err = sqlite3_exec(db, query,NULL,NULL,NULL);
+    if (err != 0){
+        sqlite3_close(db);
+        printf("NAME ALREDY EXEC\n");
+        goto START1;
+    }
+    
+    sqlite3_close(db);
+    sqlite3_free(query);
     mainMenu(*u);
 }
 
