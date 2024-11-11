@@ -1,39 +1,6 @@
 #include "header.h"
 #include <sqlite3.h>
 
-const char *RECORDS = "./data/records.txt";
-
-int getAccountFromFile(FILE *ptr, char name[50], struct Record *r)
-{
-    return fscanf(ptr, "%d %d %s %d %d/%d/%d %s %d %lf %s",
-                  &r->id,
-                  &r->userId,
-                  name,
-                  &r->accountNbr,
-                  &r->deposit.month,
-                  &r->deposit.day,
-                  &r->deposit.year,
-                  r->country,
-                  &r->phone,
-                  &r->amount,
-                  r->accountType) != EOF;
-}
-
-void saveAccountToFile(FILE *ptr, struct User u, struct Record r)
-{
-    fprintf(ptr, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
-            r.id,
-            u.id,
-            u.name,
-            r.accountNbr,
-            r.deposit.month,
-            r.deposit.day,
-            r.deposit.year,
-            r.country,
-            r.phone,
-            r.amount,
-            r.accountType);
-}
 
 void stayOrReturn(int notGood, void f(struct User u), struct User u)
 {
@@ -74,8 +41,7 @@ void stayOrReturn(int notGood, void f(struct User u), struct User u)
     }
 }
 
-void success(struct User u)
-{
+void success(struct User u){
     int option;
     printf("\n✔ Success!\n\n");
 invalid:
@@ -193,13 +159,10 @@ int isValidDate(struct Date date){
     if (date.month < 1 || date.month > 12)
         return 1;
 
-    if (date.month == 2 && ((date.year % 4 == 0 && date.year % 100 != 0) || (date.year % 400 == 0)))
-    {
+    if (date.month == 2 && ((date.year % 4 == 0 && date.year % 100 != 0) || (date.year % 400 == 0))){
         if (date.day < 1 || date.day > 29)
             return 1;
-    }
-    else
-    {
+    }else{
         if (date.day < 1 || date.day > daysInMonth[date.month - 1])
             return 1;
     }
@@ -207,31 +170,45 @@ int isValidDate(struct Date date){
     return 0;
 }
 
-void checkAllAccounts(struct User u)
-{
-    char userName[100];
-    struct Record r;
+void updateAcc(struct User u){
+    printf("\nwhat is the account number you want to change:");
+    int accnb = 0;
+    int r = 0;
+    scanf("%d", &accnb);
+    clear_buffer();
 
-    FILE *pf = fopen(RECORDS, "r");
-
-    system("clear");
-    printf("\t\t====== All accounts from user, %s =====\n\n", u.name);
-    while (getAccountFromFile(pf, userName, &r))
-    {
-        if (strcmp(userName, u.name) == 0)
-        {
-            printf("_____________________\n");
-            printf("\nAccount number:%d\nDeposit Date:%d/%d/%d \ncountry:%s \nPhone number:%d \nAmount deposited: $%.2f \nType Of Account:%s\n",
-                   r.accountNbr,
-                   r.deposit.day,
-                   r.deposit.month,
-                   r.deposit.year,
-                   r.country,
-                   r.phone,
-                   r.amount,
-                   r.accountType);
+    // check acountNb is my acount
+     while (!r){
+        switch (accnb){
+        case 1:
+           
+            r = 1;
+            break;
+        case 2:
+          
+            r = 1;
+            break;
+        default:
+            printf("Insert a valid operation!\n");
         }
     }
-    fclose(pf);
-    success(u);
 }
+
+int UpdateAccount(sqlite3 *db, struct Record r) {
+    sqlite3_stmt *stmt;
+    const char *sql = "UPDATE accounts SET country = ?, phone = ? WHERE accountNbr = ?;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK) {
+        return 1;
+    }
+
+    sqlite3_bind_text(stmt, 1, r.country, -1, SQLITE_STATIC);      
+    sqlite3_bind_int(stmt, 2, r.phone); 
+    sqlite3_bind_int(stmt, 3, r.accountNbr);        
+                           
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        return 1;
+    }
+    sqlite3_finalize(stmt);
+}
+

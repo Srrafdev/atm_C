@@ -38,7 +38,7 @@ const char *getPassword(struct User u);
 // system function
 void createNewAcc(struct User u);
 void mainMenu(struct User u);
-void checkAllAccounts(struct User u);
+//void checkAllAccounts(struct User u);
 
 // my func
 void Login(struct User *u);
@@ -47,7 +47,9 @@ int isStrValid(const char *str);
 void clear_buffer();
 int isStrValid(const char *str);
 int ExecQuery(const char *query, int numArgs, ...);
-void CreateNewAccount(struct User u);
+//void CreateNewAccount(struct User u);
 int isValidDate(struct Date date);
 int InsertRecord(sqlite3 *db, struct Record r, int user_id, const char *userName);
-
+// update account
+void updateAcc(struct User u);
+int UpdateAccount(sqlite3 *db, struct Record r);

@@ -14,6 +14,7 @@ void clear_buffer() {
 
 void mainMenu(struct User u){
     int option;
+    
     system("clear");
     printf("\n\n\t\t======= ATM =======\n\n");
     printf("\n\t\t-->> Feel free to choose one of the options below <<--\n");
@@ -34,8 +35,7 @@ void mainMenu(struct User u){
        //CreateNewAccount(u);
         break;
     case 2:
-        // student TODO : add your **Update account information** function
-        // here
+        updateAcc(u);
         break;
     case 3:
         // student TODO : add your **Check the details of existing accounts** function
@@ -86,9 +86,7 @@ void initMenu(struct User *u){
             r = 1;
             break;
         case 2:
-            // student TODO : add your **Registration** function
             Registration(u);
-            // here
             r = 1;
             break;
         case 3:
