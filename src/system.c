@@ -1,4 +1,5 @@
 #include "header.h"
+#include <sqlite3.h>
 
 const char *RECORDS = "./data/records.txt";
 
@@ -6,8 +7,8 @@ int getAccountFromFile(FILE *ptr, char name[50], struct Record *r)
 {
     return fscanf(ptr, "%d %d %s %d %d/%d/%d %s %d %lf %s",
                   &r->id,
-		  &r->userId,
-		  name,
+                  &r->userId,
+                  name,
                   &r->accountNbr,
                   &r->deposit.month,
                   &r->deposit.day,
@@ -22,8 +23,8 @@ void saveAccountToFile(FILE *ptr, struct User u, struct Record r)
 {
     fprintf(ptr, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
             r.id,
-	        u.id,
-	        u.name,
+            u.id,
+            u.name,
             r.accountNbr,
             r.deposit.month,
             r.deposit.day,
@@ -96,30 +97,30 @@ invalid:
     }
 }
 
-void createNewAcc(struct User u)
-{
+void createNewAcc(struct User u){
     struct Record r;
     struct Record cr;
     char userName[50];
-    FILE *pf = fopen(RECORDS, "a+");
 
-noAccount:
     system("clear");
+noAccount:
     printf("\t\t\t===== New record =====\n");
 
     printf("\nEnter today's date(mm/dd/yyyy):");
+    r.deposit.month =0;
+    r.deposit.day = 0;
+    r.deposit.year =0;
+     clear_buffer();
     scanf("%d/%d/%d", &r.deposit.month, &r.deposit.day, &r.deposit.year);
-    printf("\nEnter the account number:");
-    scanf("%d", &r.accountNbr);
-
-    while (getAccountFromFile(pf, userName, &cr))
-    {
-        if (strcmp(userName, u.name) == 0 && cr.accountNbr == r.accountNbr)
-        {
-            printf("✖ This Account already exists for this user\n\n");
-            goto noAccount;
-        }
+    if(isValidDate(r.deposit) != 0){
+        system("clear");
+        printf("date not valid\n");
+        goto noAccount;
     }
+   
+    printf("\nEnter the account number:");
+
+    scanf("%d", &r.accountNbr);
     printf("\nEnter the country:");
     scanf("%s", r.country);
     printf("\nEnter the phone number:");
@@ -128,30 +129,82 @@ noAccount:
     scanf("%lf", &r.amount);
     printf("\nChoose the type of account:\n\t-> saving\n\t-> current\n\t-> fixed01(for 1 year)\n\t-> fixed02(for 2 years)\n\t-> fixed03(for 3 years)\n\n\tEnter your choice:");
     scanf("%s", r.accountType);
+    clear_buffer();
 
-    saveAccountToFile(pf, u, r);
-
-    fclose(pf);
+    int err = 0;
+    sqlite3 *db = NULL;
+    err = sqlite3_open("./data/database.db", &db);
+    if (err != 0){
+        sqlite3_close(db);
+        printf("ERROR OPEN DB\n");
+        return exit(0);
+    }
+   err = InsertRecord(db,r,u.id,u.name);
+   if(err != 0){
+    sqlite3_close(db);
+    system("clear");
+    printf("Number account alredy exec\n");
+    goto noAccount;
+   }
+  
+    sqlite3_close(db);
     success(u);
 }
 
-void CreateNewAccount(struct User u){
-    struct Record r;
-    START:
-    system("clear");
-    printf("\t\t\t===== New record =====\n");
-
-    printf("\nEnter today's date(mm/dd/yyyy):");
-     while (fgets(r.accountNbr, 10,stdin) != NULL){
-       // r.accountNbr[strcspn(r.accountNbr, "\n")] = '\0';
-        if (isStrValid(r.accountNbr) == 0){
-            printf("\nnot valid: %s", r.accountNbr);
-            goto START;
-        }else{
-            break;
-        } 
+int InsertRecord(sqlite3 *db, struct Record r, int user_id, const char *userName) {
+    sqlite3_stmt *stmt;
+    const char *sql = "INSERT INTO accounts (user_id, name_user, country, phone, accountType, accountNbr, amount, detposit) "
+                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+    
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK) {
+        printf("Failed to prepare statement\n");
+        return 1;
     }
-    clear_buffer();
+
+    sqlite3_bind_int(stmt, 1, user_id);                    
+    sqlite3_bind_text(stmt, 2, userName, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, r.country, -1, SQLITE_STATIC); 
+    sqlite3_bind_int(stmt, 4, r.phone);  
+    sqlite3_bind_text(stmt, 5, r.accountType, -1, SQLITE_STATIC); 
+    sqlite3_bind_int(stmt, 6, r.accountNbr);                
+    sqlite3_bind_double(stmt, 7, r.amount);                
+    
+   
+     //"MM/DD/YYYY\0"
+    char dateStr[11];
+    snprintf(dateStr, sizeof(dateStr), "%02d/%02d/%04d", r.deposit.month, r.deposit.day, r.deposit.year);
+    sqlite3_bind_text(stmt, 8, dateStr, -1, SQLITE_STATIC);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        printf("Number account alredy exec\n");
+        return 1;
+    }
+
+    sqlite3_finalize(stmt);
+}
+
+int isValidDate(struct Date date){
+
+    int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    if (date.year <= 0 || date.month <= 0 || date.day <= 0)
+        return 1;
+
+    if (date.month < 1 || date.month > 12)
+        return 1;
+
+    if (date.month == 2 && ((date.year % 4 == 0 && date.year % 100 != 0) || (date.year % 400 == 0)))
+    {
+        if (date.day < 1 || date.day > 29)
+            return 1;
+    }
+    else
+    {
+        if (date.day < 1 || date.day > daysInMonth[date.month - 1])
+            return 1;
+    }
+
+    return 0;
 }
 
 void checkAllAccounts(struct User u)

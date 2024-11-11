@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sqlite3.h>
 
 struct Date
 {
@@ -40,12 +41,13 @@ void mainMenu(struct User u);
 void checkAllAccounts(struct User u);
 
 // my func
-
 void Login(struct User *u);
 void Registration(struct User *u);
 int isStrValid(const char *str);
 void clear_buffer();
 int isStrValid(const char *str);
 int ExecQuery(const char *query, int numArgs, ...);
-
+void CreateNewAccount(struct User u);
+int isValidDate(struct Date date);
+int InsertRecord(sqlite3 *db, struct Record r, int user_id, const char *userName);
 

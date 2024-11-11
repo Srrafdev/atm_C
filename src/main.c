@@ -30,7 +30,8 @@ void mainMenu(struct User u){
     switch (option)
     {
     case 1:
-       // createNewAcc(u);
+        createNewAcc(u);
+       //CreateNewAccount(u);
         break;
     case 2:
         // student TODO : add your **Update account information** function
@@ -111,6 +112,7 @@ void Login(struct User *u){
     while (fgets(u->name, 50,stdin) != NULL){
         u->name[strcspn(u->name, "\n")] = '\0';
         if (isStrValid(u->name) == 0){
+            system("clear");
             printf("\nnot valid: %s", u->name);
             goto START1;
         }else{
@@ -135,6 +137,7 @@ void Login(struct User *u){
     while (fgets(u->password, 50,stdin) != NULL){
         u->password[strcspn(u->password, "\n")] = '\0';
         if (isStrValid(u->password) == 0){
+            system("clear");
             printf("\nnot valid: %s", u->password);
             goto START2;
         } else{
@@ -174,10 +177,10 @@ void Login(struct User *u){
         printf("invalid data\n");
         goto START1;
     }
-
+    u->id = id;
    sqlite3_finalize(stm);
    sqlite3_free(query);
-   sqlite3_close(db);
+  // sqlite3_close(db);
    mainMenu(*u);
 }
 
@@ -192,6 +195,7 @@ void Registration(struct User *u){
     while (fgets(u->name, 50,stdin) != NULL){
         u->name[strcspn(u->name, "\n")] = '\0';
         if (isStrValid(u->name) == 0){
+            system("clear");
             printf("\nnot valid: %s", u->name);
             goto START1;
         }else{
@@ -216,6 +220,7 @@ void Registration(struct User *u){
     while (fgets(u->password, 50,stdin) != NULL){
         u->password[strcspn(u->password, "\n")] = '\0';
         if (isStrValid(u->password) == 0){
+            system("clear");
             printf("\nnot valid: %s", u->password);
             goto START2;
         } else{
@@ -243,10 +248,24 @@ void Registration(struct User *u){
     err = sqlite3_exec(db, query,NULL,NULL,NULL);
     if (err != 0){
         sqlite3_close(db);
+        system("clear");
         printf("NAME ALREDY EXEC\n");
         goto START1;
     }
-    
+    sqlite3_stmt* stm;
+    char* query2 = sqlite3_mprintf("SELECT id FROM users WHERE name = %Q AND password = %Q", u->name, u->password);
+    err = sqlite3_prepare_v2(db, query2, -1, &stm, NULL);
+    if (err != 0){
+        sqlite3_close(db);
+        printf("ERROR PREPARE DB\n");
+        return exit(0);
+    }
+    int id = 0;
+    while ((err = sqlite3_step(stm)) == SQLITE_ROW){
+         id = sqlite3_column_int(stm, 0);
+       // const unsigned char* name = sqlite3_column_text(stm,1); 
+    }
+    u->id = id;
     sqlite3_close(db);
     sqlite3_free(query);
     mainMenu(*u);
@@ -321,10 +340,10 @@ int main() {
                            "country TEXT NOT NULL,"
                            "phone TEXT NOT NULL,"
                            "accountType TEXT NOT NULL,"
-                           "accountNbr INTEGER NOT NULL,"
+                           "accountNbr INTEGER NOT NULL UNIQUE,"
                            "amount INTEGER NOT NULL,"
-                           "detposit TEXT NOT NULL,"
-                           "withdraw TEXT NOT NULL,"
+                           "detposit TEXT ,"
+                           "withdraw TEXT,"
                            "FOREIGN KEY (name_user) REFERENCES users(name),"
                            "FOREIGN KEY (user_id) REFERENCES users(id));";
 
@@ -336,6 +355,6 @@ int main() {
 
 
      initMenu(&u);
-    // mainMenu(u);
+     mainMenu(u);
     return 0;
 }
