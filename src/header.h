@@ -62,3 +62,6 @@ int GetAccountInfo(sqlite3 *db, int accountNbr, int showStatus);
 void checkStatus(const char *deposit, const char *accountType, double amount);
 // all acounts info
 void checkAllAccounts(struct User u);
+// make transction
+void MakeTransaction(struct User u);
+int WithdrawDeposit(sqlite3 *db,int accountNbr,double amount, int pluMin);

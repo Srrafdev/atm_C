@@ -41,6 +41,7 @@ void Menuorexite(struct User u){
     printf("\nEnter 1 to go to the main menu and 0 to exit!\n");
     scanf("%d", &option);
     system("clear");
+    clear_buffer();
     if (option == 1)
     {
         mainMenu(u);
@@ -51,7 +52,7 @@ void Menuorexite(struct User u){
     }
     else
     {
-        printf("Insert a valid operation!\n");
+        printf("\nInsert a valid operation!\n");
         exit(0);
     }
 }
@@ -62,6 +63,7 @@ void success(struct User u){
     printf("Enter 1 to go to the main menu and 0 to exit!\n");
     scanf("%d", &option);
     system("clear");
+    clear_buffer();
     if (option == 1)
     {
         mainMenu(u);
@@ -72,7 +74,7 @@ void success(struct User u){
     }
     else
     {
-        printf("Insert a valid operation!\n");
+        printf("\nInsert a valid operation!\n");
         exit(0);
     }
 }

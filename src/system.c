@@ -103,8 +103,7 @@ int InsertRecord(sqlite3 *db, struct Record r, int user_id, const char *userName
     const char *sql = "INSERT INTO accounts (user_id, name_user, country, phone, accountType, accountNbr, amount, detposit) "
                       "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK)
-    {
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK){
         printf("Failed to prepare statement\n");
         return 1;
     }
@@ -302,7 +301,7 @@ int UpdatePhone(sqlite3 *db, int phone, int accountNbr) {
 
 //////////////////////////////////////////////////////////////////////////////////
 void CheckAccounts(struct User u){
-     int err = 0;
+    int err = 0;
     sqlite3 *db = NULL;
     
     // Open the database
@@ -382,12 +381,14 @@ void checkStatus(const char *deposit, const char *accountType, double amount) {
     if (strcmp(accountType, "current") == 0) {
         printf("\nYou will not get interests because the account is of type current\n");
         return;
-    } else if (strcmp(accountType, "savings") == 0) {
+    } else if (strcmp(accountType, "saving") == 0) {
         interestRate = 0.07;  
         interestAmount = amount * interestRate / 12;  
-        printf("Deposit Date: %s\n", deposit);
-        printf("Account Type: %s\n", accountType);
-        printf("\nYou will get $%.2f as interest on day %s of every month.\n", interestAmount, deposit + 3);  
+     
+        char day[3];
+        strncpy(day,deposit,2);
+        printf("\n%s\n", day);
+        printf("\n\nYou will get $%.2f as interest on day %s of every month.\n", interestAmount, day);  
         return;
     } else if (strcmp(accountType, "fixed01") == 0) {
         interestRate = 0.04;  // 4% for 1-year fixed
@@ -403,13 +404,10 @@ void checkStatus(const char *deposit, const char *accountType, double amount) {
         return;
     }
 
-    // Calculate interest amount for fixed-term accounts
     interestAmount = amount * interestRate * termYears;
 
-    // Display the interest information
-    //printf("Deposit Date: %s\n", deposit);
-    //printf("Account Type: %s\n", accountType);
-    printf("\nFor a %d-year term, you will get $%.2f as interest in total.\n", termYears, interestAmount);
+   
+    printf("\nFor a %d year, you will get $%.2f as interest in total.\n", termYears, interestAmount);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -443,3 +441,104 @@ void checkAllAccounts(struct User u){
     sqlite3_close(db);
 }
 //////////////////////////////////////////////////////////////////////////////////
+
+void MakeTransaction(struct User u){
+    int err = 0;
+    sqlite3 *db = NULL;
+    
+    // Open the database
+    err = sqlite3_open("./data/database.db", &db);
+    if (err != 0) {
+        printf("ERROR OPEN DB\n");
+        sqlite3_close(db);
+       return;
+    }
+
+    int accnb = 0;
+    printf("\nEnter account number: ");
+    scanf("%d", &accnb);
+
+     system("clear");
+    // Check if the account number exists
+    err = checkAccountNumber(db, accnb, u.id);
+    if (err != 1) {
+        system("clear");
+        printf("\nAccount number not found.\n");
+        sqlite3_close(db);
+        Menuorexite(u);
+    }
+    int nbr = 0;
+    printf("\nWhich information do you want to update?\n1 -> withdraw\n2 -> deposit\n");
+    scanf("%d", &nbr);
+    switch (nbr) {
+    case 1: {
+        system("clear");
+        double amount = 0;
+
+        while (1) {
+            printf("Enter the amount you want to withdrow: $");
+            scanf("%d", &amount);
+        }
+        if(amount != 0){
+         err = WithdrawDeposit(db,accnb,amount,0); 
+         if (err != 0){
+            printf("not valid");
+            return;
+         }
+        }
+       
+        success(u);
+        break;
+    }
+    case 2: {
+        system("clear");
+        double amount = 0;
+
+        while (1) {
+            printf("Enter the amount you want to deposit: $");
+            scanf("%d", &amount);
+        }
+        if(amount != 0){
+           err = WithdrawDeposit(db,accnb,amount,1);
+            if (err != 0){
+            printf("not valid");
+            return;
+         }
+        }
+        success(u);
+        break;
+    }
+    default:
+        printf("Please select 1 or 2!\n");
+        sqlite3_close(db);
+        return;
+    }
+
+    clear_buffer();
+    sqlite3_close(db);
+}
+
+int WithdrawDeposit(sqlite3 *db,int accountNbr,double amount, int pluMin){
+    sqlite3_stmt *stmt;
+    const char *sql = "";
+    if(pluMin == 1){
+        sql = "UPDATE accounts SET amount = amount + ? HWERE accountNbr = ?;";
+    }else if (pluMin == 0){
+        sql = "UPDATE accounts SET amount = amount - ? HWERE accountNbr = ?;";
+    }else{
+        return 1;
+    }
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK){
+        printf("\nFailed to prepare statement\n");
+        return 1;
+    }
+    sqlite3_bind_double(stmt, 1, amount);
+    sqlite3_bind_int(stmt, 2,accountNbr);
+
+    if(sqlite3_step(stmt) != SQLITE_DONE){
+        printf("\nnot valid\n");
+        return 1;
+    }
+    sqlite3_finalize(stmt);
+}

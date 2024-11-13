@@ -326,7 +326,7 @@ int main() {
                            "phone TEXT NOT NULL,"
                            "accountType TEXT NOT NULL,"
                            "accountNbr INTEGER NOT NULL UNIQUE,"
-                           "amount INTEGER NOT NULL,"
+                           "amount INTEGER NOT NULL CHECK (amount BETWEEN 0 AND 9999999999),"
                            "detposit TEXT ,"
                            "withdraw TEXT,"
                            "FOREIGN KEY (name_user) REFERENCES users(name),"
