@@ -327,7 +327,7 @@ void CheckAccounts(struct User u){
        return;
     }
 
-    err = GetAccountInfo(db,accnb);
+    err = GetAccountInfo(db,accnb, 1);
     if (err != 0){
         printf("cant get data acount\n");
     }
@@ -337,7 +337,7 @@ void CheckAccounts(struct User u){
    return;
 }
 // get data acount by acount number
-int GetAccountInfo(sqlite3 *db, int accountNbr) {
+int GetAccountInfo(sqlite3 *db, int accountNbr, int showStatus) {
     sqlite3_stmt *stmt;
     const char *sql = "SELECT country, phone, accountType, amount, detposit "
                       "FROM accounts WHERE accountNbr = ?;";
@@ -362,12 +362,54 @@ int GetAccountInfo(sqlite3 *db, int accountNbr) {
         printf("Type Of Account:%s\n", accountType);
         printf("Amount deposited:$%d\n", amount);
         printf("Deposit Date:%s\n", deposit);
+
+        if(showStatus == 1){
+            checkStatus(deposit,accountType,amount);
+        }
     } else {
         printf("Account number %d not found.\n", accountNbr);
     }
 
     sqlite3_finalize(stmt);
     return 0;
+}
+
+void checkStatus(const char *deposit, const char *accountType, double amount) {
+    double interestRate = 0.0;
+    int termYears = 0;  
+    double interestAmount = 0.0;
+
+    if (strcmp(accountType, "current") == 0) {
+        printf("\nYou will not get interests because the account is of type current\n");
+        return;
+    } else if (strcmp(accountType, "savings") == 0) {
+        interestRate = 0.07;  
+        interestAmount = amount * interestRate / 12;  
+        printf("Deposit Date: %s\n", deposit);
+        printf("Account Type: %s\n", accountType);
+        printf("\nYou will get $%.2f as interest on day %s of every month.\n", interestAmount, deposit + 3);  
+        return;
+    } else if (strcmp(accountType, "fixed01") == 0) {
+        interestRate = 0.04;  // 4% for 1-year fixed
+        termYears = 1;
+    } else if (strcmp(accountType, "fixed02") == 0) {
+        interestRate = 0.05;  // 5% for 2-year fixed
+        termYears = 2;
+    } else if (strcmp(accountType, "fixed03") == 0) {
+        interestRate = 0.08;  // 8% for 3-year fixed
+        termYears = 3;
+    } else {
+        printf("\nUnknown account type\n");
+        return;
+    }
+
+    // Calculate interest amount for fixed-term accounts
+    interestAmount = amount * interestRate * termYears;
+
+    // Display the interest information
+    //printf("Deposit Date: %s\n", deposit);
+    //printf("Account Type: %s\n", accountType);
+    printf("\nFor a %d-year term, you will get $%.2f as interest in total.\n", termYears, interestAmount);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -395,7 +437,7 @@ void checkAllAccounts(struct User u){
     while(sqlite3_step(stmt) == SQLITE_ROW){
         int accnbr = sqlite3_column_int(stmt, 0);
         printf("\n===============================\n");
-        GetAccountInfo(db,accnbr);
+        GetAccountInfo(db,accnbr,0);
     }
     sqlite3_finalize(stmt);
     sqlite3_close(db);

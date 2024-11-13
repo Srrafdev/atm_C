@@ -58,6 +58,7 @@ int UpdateCountry(sqlite3 *db, const char *country, int accountNbr);
 int UpdatePhone(sqlite3 *db, int phone, int accountNbr);
 // acount info
 void CheckAccounts(struct User u);
-int GetAccountInfo(sqlite3 *db, int accountNbr);
+int GetAccountInfo(sqlite3 *db, int accountNbr, int showStatus);
+void checkStatus(const char *deposit, const char *accountType, double amount);
 // all acounts info
 void checkAllAccounts(struct User u);
