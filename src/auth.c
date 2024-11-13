@@ -1,60 +1,78 @@
-#include <termios.h>
 #include "header.h"
+#include <ctype.h>
+#include <stdio.h>
 
-char *USERS = "./data/users.txt";
-
-void loginMenu(char a[50], char pass[50])
-{
-    struct termios oflags, nflags;
-
-    system("clear");
-    printf("\n\n\n\t\t\t\t   Bank Management System\n\t\t\t\t\t User Login:");
-    scanf("%s", a);
-    clear_buffer();
-
-    // disabling echo
-    tcgetattr(fileno(stdin), &oflags);
-    nflags = oflags;
-    nflags.c_lflag &= ~ECHO;
-    nflags.c_lflag |= ECHONL;
-
-    if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0)
-    {
-        perror("tcsetattr");
-        return exit(1);
+int isStrValid(const char *str){
+    int i;
+    if(strlen(str) > 49){
+        return 0;
     }
-    printf("\n\n\n\n\n\t\t\t\tEnter the password to login:");
-    scanf("%s", pass);
-
-    // restore terminal
-    if (tcsetattr(fileno(stdin), TCSANOW, &oflags) != 0)
-    {
-        perror("tcsetattr");
-        return exit(1);
-    }
-};
-
-const char *getPassword(struct User u)
-{
-    FILE *fp;
-    struct User userChecker;
-
-    if ((fp = fopen("./data/users.txt", "r")) == NULL)
-    {
-        printf("Error! opening file");
-        exit(1);
-    }
-
-    while (fscanf(fp, "%s %s", userChecker.name, userChecker.password) != EOF)
-    {
-        if (strcmp(userChecker.name, u.name) == 0)
-        {
-            fclose(fp);
-            char *buff = userChecker.password;
-            return buff;
+    for (i = 0; i < strlen(str); i++){
+        if (isalpha(str[i]) == 0){
+            return 0;
         }
     }
+    return 1;
+}
 
-    fclose(fp);
-    return "no user found";
+int isPhoneValid(int phone){
+    if (phone >= 100000000 && phone <= 999999999) {
+        return 1; 
+    }
+    return 0;
+}
+
+int isCountryValid(char *country){
+    int length = strlen(country);
+
+    if (length == 0 || length > 49) {
+        return 1;
+    }
+    for (int i = 0; i < strlen(country); i++){
+        if (isalpha(country[i]) == 0){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void Menuorexite(struct User u){
+    int option;
+    printf("\nEnter 1 to go to the main menu and 0 to exit!\n");
+    scanf("%d", &option);
+    system("clear");
+    if (option == 1)
+    {
+        mainMenu(u);
+    }
+    else if (option == 0)
+    {
+        exit(1);
+    }
+    else
+    {
+        printf("Insert a valid operation!\n");
+        exit(0);
+    }
+}
+
+void success(struct User u){
+    int option;
+    printf("\n✔ Success!\n\n");
+    printf("Enter 1 to go to the main menu and 0 to exit!\n");
+    scanf("%d", &option);
+    system("clear");
+    if (option == 1)
+    {
+        mainMenu(u);
+    }
+    else if (option == 0)
+    {
+        exit(1);
+    }
+    else
+    {
+        printf("Insert a valid operation!\n");
+        exit(0);
+    }
 }

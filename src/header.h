@@ -30,10 +30,11 @@ struct User
     char password[50];
 };
 
-// authentication functions
-void loginMenu(char a[50], char pass[50]);
-//void registerMenu(char a[50], char pass[50]);
-const char *getPassword(struct User u);
+// auth
+int isPhoneValid(int phone);
+int isCountryValid(char *country);
+void Menuorexite(struct User u);
+void success(struct User u);
 
 // system function
 void createNewAcc(struct User u);
@@ -52,4 +53,11 @@ int isValidDate(struct Date date);
 int InsertRecord(sqlite3 *db, struct Record r, int user_id, const char *userName);
 // update account
 void updateAcc(struct User u);
-int UpdateAccount(sqlite3 *db, struct Record r);
+int checkAccountNumber(sqlite3 *db, int accountNbr, int userid);
+int UpdateCountry(sqlite3 *db, const char *country, int accountNbr);
+int UpdatePhone(sqlite3 *db, int phone, int accountNbr);
+// acount info
+void CheckAccounts(struct User u);
+int GetAccountInfo(sqlite3 *db, int accountNbr);
+// all acounts info
+void checkAllAccounts(struct User u);

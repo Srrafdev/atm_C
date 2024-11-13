@@ -11,7 +11,6 @@ void clear_buffer() {
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
-
 void mainMenu(struct User u){
     int option;
     
@@ -36,13 +35,15 @@ void mainMenu(struct User u){
         break;
     case 2:
         updateAcc(u);
+         exit(1);
         break;
     case 3:
-        // student TODO : add your **Check the details of existing accounts** function
-        // here
+        CheckAccounts(u);
+        Menuorexite(u);
         break;
     case 4:
-       // checkAllAccounts(u);
+        checkAllAccounts(u);
+        success(u);
         break;
     case 5:
         // student TODO : add your **Make transaction** function
@@ -268,20 +269,6 @@ void Registration(struct User *u){
     sqlite3_free(query);
     mainMenu(*u);
 }
-
-int isStrValid(const char *str){
-    int i;
-    if(strlen(str) > 49){
-        return 0;
-    }
-    for (i = 0; i < strlen(str); i++){
-        if (isalpha(str[i]) == 0){
-            return 0;
-        }
-    }
-    return 1;
-}
-
 
 int ExecQuery(const char *query, int numArgs, ...) {
     sqlite3 *db;
