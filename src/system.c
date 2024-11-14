@@ -1,50 +1,9 @@
 #include "header.h"
 #include <sqlite3.h>
 
-void stayOrReturn(int notGood, void f(struct User u), struct User u)
-{
-    int option;
-    if (notGood == 0)
-    {
-        system("clear");
-        printf("\n✖ Record not found!!\n");
-    invalid:
-        printf("\nEnter 0 to try again, 1 to return to main menu and 2 to exit:");
-        scanf("%d", &option);
-        if (option == 0)
-            f(u);
-        else if (option == 1)
-            mainMenu(u);
-        else if (option == 2)
-            exit(0);
-        else
-        {
-            printf("Insert a valid operation!\n");
-            goto invalid;
-        }
-    }
-    else
-    {
-        printf("\nEnter 1 to go to the main menu and 0 to exit:");
-        scanf("%d", &option);
-    }
-    if (option == 1)
-    {
-        system("clear");
-        mainMenu(u);
-    }
-    else
-    {
-        system("clear");
-        exit(1);
-    }
-}
-
 
 void createNewAcc(struct User u){
     struct Record r;
-    struct Record cr;
-    char userName[50];
 
     system("clear");
 noAccount:
@@ -604,3 +563,97 @@ int Remove(sqlite3 *db,int accountNbr){
 }
 
 //////////////////////////////////////////////////////////////////////////////////
+void TransferOwner(struct User u){
+      int err = 0;
+    sqlite3 *db = NULL;
+    
+    // Open the database
+    err = sqlite3_open("./data/database.db", &db);
+    if (err != 0) {
+        printf("ERROR OPEN DB\n");
+        sqlite3_close(db);
+       return;
+    }
+
+    int accnb = 0;
+    printf("\nEnter account number you want to transfere ownership:");
+    scanf("%d", &accnb);
+    clear_buffer();
+    
+    // Check if the account number exists
+    err = checkAccountNumber(db, accnb, u.id);
+    if (err != 1) {
+        printf("\nAccount number not found.\n");
+        sqlite3_close(db);
+        return;
+    }
+    err = GetAccountInfo(db,accnb,0);
+    if (err != 0){
+        printf("\ncan not get account info\n");
+        sqlite3_close(db);
+        return;
+    }
+     
+    char nameuser[50];
+    printf("\nwhich user you transfer ownership to (user name):");
+ //fgets(nameuser, sizeof(nameuser), stdin);
+    scanf("%s",nameuser);
+    printf("%s\n",nameuser);
+    clear_buffer();
+// check is alphabit
+    int id = GetIdbyName(db,nameuser);
+    if(id == 0){
+        printf("\nuser not found\n");
+        sqlite3_close(db);
+        return;
+    }
+    err = Transform(db,accnb,id,nameuser);
+    if (err != 0){
+        printf("\nuser name not valid\n");
+        sqlite3_close(db);
+        return;
+    }
+    sqlite3_close(db);
+    system("clear");
+    success(u);
+}
+
+int GetIdbyName(sqlite3 *db, const char *nameUser){
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT id FROM  users WHERE name = ?;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Failed to prepare statement\n");
+        return 0;
+    }
+    sqlite3_bind_text(stmt,1,nameUser,-1,SQLITE_STATIC);
+    
+    int id = 0;
+    if(sqlite3_step(stmt)== SQLITE_ROW){
+        id = sqlite3_column_int(stmt,0);
+    }else{
+        printf("Account number %s not found.\n", nameUser);
+    }
+    sqlite3_finalize(stmt);
+    return id;
+}
+
+int Transform(sqlite3 *db,int accountNbr,int id, const char *user){
+    sqlite3_stmt *stmt;
+    const char *sql = "UPDATE accounts SET user_id = ?,name_user = ? WHERE accountNbr = ?;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK){
+        printf("\nFailed to prepare statement\n");
+        return 1;
+    }
+    sqlite3_bind_int(stmt,1,id);
+    sqlite3_bind_text(stmt,2,user,-1,SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 3,accountNbr);
+
+    if(sqlite3_step(stmt) != SQLITE_DONE){
+        printf("\nnot valid\n");
+        return 1;
+    }
+    sqlite3_finalize(stmt);
+    return 0;
+}

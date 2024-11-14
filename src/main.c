@@ -54,8 +54,8 @@ void mainMenu(struct User u){
         Menuorexite(u);
         break;
     case 7:
-        // student TODO : add your **Transfer owner** function
-        // here
+        TransferOwner(u);
+        Menuorexite(u);
         break;
     case 8:
         exit(1);
@@ -95,6 +95,7 @@ void initMenu(struct User *u){
             break;
         default:
             printf("Insert a valid operation!\n");
+            clear_buffer();
             goto START;
         }
     }

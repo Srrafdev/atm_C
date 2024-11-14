@@ -68,3 +68,7 @@ int WithdrawDeposit(sqlite3 *db,int accountNbr,double amount, int pluMin);
 // remove account
 void RemoveAccount(struct User u);
 int Remove(sqlite3 *db,int accountNbr);
+//transfer Owner to anther user
+void TransferOwner(struct User u);
+int GetIdbyName(sqlite3 *db, const char *nameUser);
+int Transform(sqlite3 *db,int accountNbr,int id, const char *user);
