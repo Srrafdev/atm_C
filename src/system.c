@@ -352,14 +352,14 @@ int GetAccountInfo(sqlite3 *db, int accountNbr, int showStatus) {
         const unsigned char *country = sqlite3_column_text(stmt, 0);
         int phone = sqlite3_column_int(stmt, 1);
         const unsigned char *accountType = sqlite3_column_text(stmt, 2);
-        int amount = sqlite3_column_int(stmt, 3);
+        double amount = sqlite3_column_double(stmt, 3);
         const unsigned char *deposit = sqlite3_column_text(stmt, 4);
 
         printf("Account Number:%d\n", accountNbr);
         printf("Country:%s\n", country);
         printf("Phone number:%d\n", phone);
         printf("Type Of Account:%s\n", accountType);
-        printf("Amount deposited:$%d\n", amount);
+        printf("Amount deposited:$%lf\n", amount);
         printf("Deposit Date:%s\n", deposit);
 
         if(showStatus == 1){
@@ -387,7 +387,6 @@ void checkStatus(const char *deposit, const char *accountType, double amount) {
      
         char day[3];
         strncpy(day,deposit,2);
-        printf("\n%s\n", day);
         printf("\n\nYou will get $%.2f as interest on day %s of every month.\n", interestAmount, day);  
         return;
     } else if (strcmp(accountType, "fixed01") == 0) {
@@ -440,8 +439,8 @@ void checkAllAccounts(struct User u){
     sqlite3_finalize(stmt);
     sqlite3_close(db);
 }
-//////////////////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////////////////////
 void MakeTransaction(struct User u){
     int err = 0;
     sqlite3 *db = NULL;
@@ -458,7 +457,7 @@ void MakeTransaction(struct User u){
     printf("\nEnter account number: ");
     scanf("%d", &accnb);
 
-     system("clear");
+     
     // Check if the account number exists
     err = checkAccountNumber(db, accnb, u.id);
     if (err != 1) {
@@ -472,12 +471,14 @@ void MakeTransaction(struct User u){
     scanf("%d", &nbr);
     switch (nbr) {
     case 1: {
-        system("clear");
         double amount = 0;
 
         while (1) {
             printf("Enter the amount you want to withdrow: $");
-            scanf("%d", &amount);
+            scanf("%lf", &amount);
+             if (amount != 0){
+                break;
+            }
         }
         if(amount != 0){
          err = WithdrawDeposit(db,accnb,amount,0); 
@@ -491,12 +492,14 @@ void MakeTransaction(struct User u){
         break;
     }
     case 2: {
-        system("clear");
         double amount = 0;
 
         while (1) {
             printf("Enter the amount you want to deposit: $");
-            scanf("%d", &amount);
+            scanf("%lf", &amount);
+            if (amount != 0){
+                break;
+            }
         }
         if(amount != 0){
            err = WithdrawDeposit(db,accnb,amount,1);
@@ -522,9 +525,9 @@ int WithdrawDeposit(sqlite3 *db,int accountNbr,double amount, int pluMin){
     sqlite3_stmt *stmt;
     const char *sql = "";
     if(pluMin == 1){
-        sql = "UPDATE accounts SET amount = amount + ? HWERE accountNbr = ?;";
+        sql = "UPDATE accounts SET amount = amount + ? WHERE accountNbr = ?;";
     }else if (pluMin == 0){
-        sql = "UPDATE accounts SET amount = amount - ? HWERE accountNbr = ?;";
+        sql = "UPDATE accounts SET amount = amount - ? WHERE accountNbr = ?;";
     }else{
         return 1;
     }
@@ -541,4 +544,63 @@ int WithdrawDeposit(sqlite3 *db,int accountNbr,double amount, int pluMin){
         return 1;
     }
     sqlite3_finalize(stmt);
+    return 0;
 }
+
+//////////////////////////////////////////////////////////////////////////////////
+void RemoveAccount(struct User u){
+     int err = 0;
+    sqlite3 *db = NULL;
+    
+    // Open the database
+    err = sqlite3_open("./data/database.db", &db);
+    if (err != 0) {
+        printf("ERROR OPEN DB\n");
+        sqlite3_close(db);
+       return;
+    }
+
+    int accnb = 0;
+    printf("\nEnter account number: ");
+    scanf("%d", &accnb);
+
+     system("clear");
+    // Check if the account number exists
+    err = checkAccountNumber(db, accnb, u.id);
+    if (err != 1) {
+        system("clear");
+        printf("\nAccount number not found.\n");
+        sqlite3_close(db);
+       return;
+    }
+    err = Remove(db,accnb);
+    if(err){
+        system("clear");
+        printf("\nfeald removw account.\n");
+        sqlite3_close(db);
+        return;
+    }
+    sqlite3_close(db);
+    clear_buffer();
+    success(u);
+}
+
+int Remove(sqlite3 *db,int accountNbr){
+    sqlite3_stmt *stmt;
+    const char *sql = "DELETE FROM accounts WHERE accountNbr = ?;";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK){
+        printf("\nFailed to prepare statement\n");
+        return 1;
+    }
+    sqlite3_bind_int(stmt,1,accountNbr);
+
+    if(sqlite3_step(stmt) != SQLITE_DONE){
+        printf("\nnot valid\n");
+        return 1;
+    }
+    sqlite3_finalize(stmt);
+    return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////////////

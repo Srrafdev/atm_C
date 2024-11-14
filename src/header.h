@@ -65,3 +65,6 @@ void checkAllAccounts(struct User u);
 // make transction
 void MakeTransaction(struct User u);
 int WithdrawDeposit(sqlite3 *db,int accountNbr,double amount, int pluMin);
+// remove account
+void RemoveAccount(struct User u);
+int Remove(sqlite3 *db,int accountNbr);

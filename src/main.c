@@ -31,11 +31,11 @@ void mainMenu(struct User u){
     {
     case 1:
         createNewAcc(u);
-       //CreateNewAccount(u);
+        Menuorexite(u);
         break;
     case 2:
         updateAcc(u);
-         exit(1);
+        Menuorexite(u);
         break;
     case 3:
         CheckAccounts(u);
@@ -46,12 +46,12 @@ void mainMenu(struct User u){
         success(u);
         break;
     case 5:
-        // student TODO : add your **Make transaction** function
-        // here
+        MakeTransaction(u);
+        Menuorexite(u);
         break;
     case 6:
-        // student TODO : add your **Remove existing account** function
-        // here
+        RemoveAccount(u);
+        Menuorexite(u);
         break;
     case 7:
         // student TODO : add your **Transfer owner** function
@@ -118,6 +118,7 @@ void Login(struct User *u){
             break;
         } 
     }
+    printf("\nclick enter");
     clear_buffer();
 
     // disabling echo
@@ -179,7 +180,7 @@ void Login(struct User *u){
     u->id = id;
    sqlite3_finalize(stm);
    sqlite3_free(query);
-  // sqlite3_close(db);
+   sqlite3_close(db);
    mainMenu(*u);
 }
 
@@ -201,6 +202,7 @@ void Registration(struct User *u){
             break;
         } 
     }
+    printf("\nclick enter");
     clear_buffer();
 
     // disabling echo
