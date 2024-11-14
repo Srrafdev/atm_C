@@ -5,9 +5,8 @@
 #include <termios.h>
 
 void mainMenu(struct User u){
-    int option;
-    
     system("clear");
+    START:
     printf("\n\n\t\t======= ATM =======\n\n");
     printf("\n\t\t-->> Feel free to choose one of the options below <<--\n");
     printf("\n\t\t[1]- Create a new account\n");
@@ -18,8 +17,9 @@ void mainMenu(struct User u){
     printf("\n\t\t[6]- Remove existing account\n");
     printf("\n\t\t[7]- Transfer ownership\n");
     printf("\n\t\t[8]- Exit\n");
-    scanf("%d", &option);
 
+    int option = getIntInput(":",3);
+    clear_buffer();
     switch (option)
     {
     case 1:
@@ -36,7 +36,7 @@ void mainMenu(struct User u){
         break;
     case 4:
         checkAllAccounts(u);
-        success(u);
+        Menuorexite(u);
         break;
     case 5:
         MakeTransaction(u);
@@ -54,67 +54,47 @@ void mainMenu(struct User u){
         exit(1);
         break;
     default:
+        system("clear");
         printf("Invalid operation!\n");
+        goto START;
     }
 };
 
 void initMenu(struct User *u){
-    START:
-
-    int r = 0;
-    int option;
-
     system("clear");
+    START:
     printf("\n\n\t\t======= ATM =======\n");
     printf("\n\t\t-->> Feel free to login / register :\n");
     printf("\n\t\t[1]- login\n");
     printf("\n\t\t[2]- register\n");
     printf("\n\t\t[3]- exit\n");
-    while (!r)
-    {
-        scanf("%d", &option);
+   
+       int option = getIntInput(":",3);
         clear_buffer();
         switch (option){
         case 1:
             Login(u);
-            r = 1;
             break;
         case 2:
             Registration(u);
-            r = 1;
             break;
         case 3:
             exit(1);
             break;
         default:
+            system("clear");
             printf("Insert a valid operation!\n");
-            clear_buffer();
             goto START;
         }
-    }
-};
+}
 
 // login user by name and password
 void Login(struct User *u){
     struct termios oflags, nflags;
     system("clear");
-    START1:
-    printf("\n\n\n\t\t\t\t   Bank Management System\n\t\t\t\t\t User Login:");
-    char input[50] = "";
-
-    while (fgets(u->name, 50,stdin) != NULL){
-        u->name[strcspn(u->name, "\n")] = '\0';
-        if (isStrValid(u->name) == 0){
-            system("clear");
-            printf("\nnot valid: %s", u->name);
-            goto START1;
-        }else{
-            break;
-        } 
-    }
-    printf("\nclick enter");
-    clear_buffer();
-
+    START:
+    getCharInput("\n\n\n\t\t\t\t   Bank Management System\n\t\t\t\t\t User Login:",u->name,50);
+  
     // disabling echo
     tcgetattr(fileno(stdin), &oflags);
     nflags = oflags;
@@ -126,19 +106,7 @@ void Login(struct User *u){
         return exit(1);
     }
 
-    START2:
-    printf("\n\n\n\n\n\t\t\t\tEnter the password to login:");
-    while (fgets(u->password, 50,stdin) != NULL){
-        u->password[strcspn(u->password, "\n")] = '\0';
-        if (isStrValid(u->password) == 0){
-            system("clear");
-            printf("\nnot valid: %s", u->password);
-            goto START2;
-        } else{
-            break;
-        }
-    }
-    clear_buffer();
+    getCharInput("\n\n\n\n\n\t\t\t\tEnter the password to login:",u->password,50);
 
      // restore terminal
     if (tcsetattr(fileno(stdin), TCSANOW, &oflags) != 0){
@@ -165,11 +133,11 @@ void Login(struct User *u){
     int id = 0;
     while ((err = sqlite3_step(stm)) == SQLITE_ROW){
          id = sqlite3_column_int(stm, 0);
-       // const unsigned char* name = sqlite3_column_text(stm,1); 
     }
     if(id == 0){
-        printf("invalid data\n");
-        goto START1;
+        system("clear");
+        printf("user name or password not corect\n");
+        goto START;
     }
     u->id = id;
    sqlite3_finalize(stm);
@@ -182,47 +150,21 @@ void Login(struct User *u){
 void Registration(struct User *u){
     struct termios oflags, nflags;
     system("clear");
-    START1:
-    printf("\n\n\n\t\t\t\t   Bank Management System\n\t\t\t\t\t User Login:");
-    char input[50] = "";
+    START:
 
-    while (fgets(u->name, 50,stdin) != NULL){
-        u->name[strcspn(u->name, "\n")] = '\0';
-        if (isStrValid(u->name) == 0){
-            system("clear");
-            printf("\nnot valid: %s", u->name);
-            goto START1;
-        }else{
-            break;
-        } 
-    }
-    printf("\nclick enter");
-    clear_buffer();
+    getCharInput("\n\n\n\t\t\t\t   Bank Management System\n\t\t\t\t\t User Login:",u->name,50);
 
     // disabling echo
     tcgetattr(fileno(stdin), &oflags);
     nflags = oflags;
     nflags.c_lflag &= ~ECHO;
     nflags.c_lflag |= ECHONL;
-
     if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0){
         perror("tcsetattr");
         return exit(1);
     }
 
-    START2:
-    printf("\n\n\n\n\n\t\t\t\tEnter the password to login:");
-    while (fgets(u->password, 50,stdin) != NULL){
-        u->password[strcspn(u->password, "\n")] = '\0';
-        if (isStrValid(u->password) == 0){
-            system("clear");
-            printf("\nnot valid: %s", u->password);
-            goto START2;
-        } else{
-            break;
-        }
-    }
-    clear_buffer();
+    getCharInput("\n\n\n\n\n\t\t\t\tEnter the password to login:",u->password,50);
 
      // restore terminal
     if (tcsetattr(fileno(stdin), TCSANOW, &oflags) != 0){
@@ -244,8 +186,8 @@ void Registration(struct User *u){
     if (err != 0){
         sqlite3_close(db);
         system("clear");
-        printf("NAME ALREDY EXEC\n");
-        goto START1;
+        printf("name already exec\n");
+        goto START;
     }
     sqlite3_stmt* stm;
     char* query2 = sqlite3_mprintf("SELECT id FROM users WHERE name = %Q AND password = %Q", u->name, u->password);
@@ -258,7 +200,6 @@ void Registration(struct User *u){
     int id = 0;
     while ((err = sqlite3_step(stm)) == SQLITE_ROW){
          id = sqlite3_column_int(stm, 0);
-       // const unsigned char* name = sqlite3_column_text(stm,1); 
     }
     u->id = id;
     sqlite3_close(db);
@@ -266,52 +207,22 @@ void Registration(struct User *u){
     mainMenu(*u);
 }
 
-int ExecQuery(const char *query, int numArgs, ...) {
-    sqlite3 *db;
-    sqlite3_stmt *stmt;
-    int rc;
-
-    rc = sqlite3_open("./data/database.db", &db);
-    if (rc != 0) {
-        printf("OPEN ERROR:\n");
-        sqlite3_close(db);
-        return rc;
-    }
-
-    rc = sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
-    if (rc != 0) {
-        printf("PREPARE ERROR:\n");
-        sqlite3_close(db);
-        return rc;
-    }
-
-    va_list args;
-    va_start(args, numArgs);
-    for (int i = 0; i < numArgs; i++) {
-        const char *arg = va_arg(args, const char*);
-        sqlite3_bind_text(stmt, i + 1, arg, -1, SQLITE_STATIC);
-    }
-    va_end(args);
-
-    rc = sqlite3_step(stmt);
-    if (rc != SQLITE_DONE) {
-        printf("EXECUTION ERROR:\n");
-    }
-
-    sqlite3_finalize(stmt);
-    sqlite3_close(db);
-
-    return rc == SQLITE_DONE ? 0 : rc;
-}
-
 int main() {
     struct User u;
     int err;
+    sqlite3 *db;
+    err = sqlite3_open("./data/database.db", &db);
+    if (err != 0) {
+        printf("ERROR OPEN DB\n");
+        sqlite3_close(db);
+       return 0;
+    }
 
     const char *users = "CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, password TEXT NOT NULL);";
-    err = ExecQuery(users,0);
-    if(err != 0){
-        printf("ERROR CREAT TABLE users");
+    err = sqlite3_exec(db,users,0,0,0);
+    if (err != 0){
+        printf("ERROR EXEC user\n");
+        sqlite3_close(db);
         return 0;
     }
     const char *accounts = "CREATE TABLE IF NOT EXISTS accounts("
@@ -328,12 +239,12 @@ int main() {
                            "FOREIGN KEY (name_user) REFERENCES users(name),"
                            "FOREIGN KEY (user_id) REFERENCES users(id));";
 
-    err = ExecQuery(accounts,0);
-    if(err != 0){
-        printf("ERROR CREAT TABLE accounts");
+    err = sqlite3_exec(db,accounts,0,0,0);
+    if (err != 0){
+        printf("ERROR EXEC accounts\n");
+        sqlite3_close(db);
         return 0;
     }
-
 
      initMenu(&u);
      mainMenu(u);

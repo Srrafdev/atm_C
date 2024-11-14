@@ -3,14 +3,12 @@
 #include <string.h>
 #include <sqlite3.h>
 
-struct Date
-{
+struct Date{
     int month, day, year;
 };
 
 // all fields for each record of an account
-struct Record
-{
+struct Record{
     int id;
     int userId;
     char name[50];
@@ -23,8 +21,7 @@ struct Record
     struct Date withdraw;
 };
 
-struct User
-{
+struct User{
     int id;
     char name[50];
     char password[50];
@@ -35,7 +32,8 @@ int isPhoneValid(int phone);
 int isCountryValid(char *country);
 void Menuorexite(struct User u);
 void success(struct User u);
-void getInput(char* buffer, int bufferSize);
+void getCharInput(const char* text, char* buffer, int size);
+int getIntInput(const char* prompt, int size);
 void clear_buffer();
 
 // system function
