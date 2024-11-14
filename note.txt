@@ -141,3 +141,5 @@ void getUserInput(char* buffer, int bufferSize) {
 }
 
 ====================================================================================================
+
+// check if account can wthdrow and transfer owne

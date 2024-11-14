@@ -19,7 +19,6 @@ void mainMenu(struct User u){
     printf("\n\t\t[8]- Exit\n");
 
     int option = getIntInput(":",3);
-    clear_buffer();
     switch (option)
     {
     case 1:
@@ -70,7 +69,6 @@ void initMenu(struct User *u){
     printf("\n\t\t[3]- exit\n");
    
        int option = getIntInput(":",3);
-        clear_buffer();
         switch (option){
         case 1:
             Login(u);
@@ -232,7 +230,7 @@ int main() {
                            "country TEXT NOT NULL,"
                            "phone TEXT NOT NULL,"
                            "accountType TEXT NOT NULL,"
-                           "accountNbr INTEGER NOT NULL UNIQUE,"
+                           "accountNbr INTEGER NOT NULL UNIQUE CHECK (amount BETWEEN 0 AND 9999999999),"
                            "amount INTEGER NOT NULL CHECK (amount BETWEEN 0 AND 9999999999),"
                            "detposit TEXT ,"
                            "withdraw TEXT,"

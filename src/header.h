@@ -29,11 +29,11 @@ struct User{
 
 // auth
 int isPhoneValid(int phone);
-int isCountryValid(char *country);
 void Menuorexite(struct User u);
 void success(struct User u);
 void getCharInput(const char* text, char* buffer, int size);
 int getIntInput(const char* prompt, int size);
+double getDoubleInput(const char* text, int size);
 void clear_buffer();
 
 // system function
@@ -41,12 +41,9 @@ void createNewAcc(struct User u);
 void mainMenu(struct User u);
 //void checkAllAccounts(struct User u);
 
-// my func
+// signup and login
 void Login(struct User *u);
 void Registration(struct User *u);
-int isStrValid(const char *str);
-int isStrValid(const char *str);
-int ExecQuery(const char *query, int numArgs, ...);
 //void CreateNewAccount(struct User u);
 int isValidDate(struct Date date);
 int InsertRecord(sqlite3 *db, struct Record r, int user_id, const char *userName);

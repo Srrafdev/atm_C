@@ -1,7 +1,6 @@
 #include "header.h"
 #include <sqlite3.h>
 
-
 void createNewAcc(struct User u){
     struct Record r;
 
@@ -13,41 +12,36 @@ noAccount:
     r.deposit.month = 0;
     r.deposit.day = 0;
     r.deposit.year = 0;
-    clear_buffer();
     scanf("%d/%d/%d", &r.deposit.month, &r.deposit.day, &r.deposit.year);
-    if (isValidDate(r.deposit) != 0)
-    {
+    clear_buffer();
+    if (isValidDate(r.deposit) != 0){
         system("clear");
         printf("date not valid\n");
         goto noAccount;
     }
 
-    printf("\nEnter the account number:");
+    r.accountNbr = getIntInput("\nEnter the account number:",10);
 
-    scanf("%d", &r.accountNbr);
-    printf("\nEnter the country:");
-    scanf("%s", r.country);
-    //getInput(&r.country,50);
-    printf("\nEnter the phone number:");
-    scanf("%d", &r.phone);
-    printf("\nEnter amount to deposit: $");
-    scanf("%lf", &r.amount);
-    printf("\nChoose the type of account:\n\t-> saving\n\t-> current\n\t-> fixed01(for 1 year)\n\t-> fixed02(for 2 years)\n\t-> fixed03(for 3 years)\n\n\tEnter your choice:");
-    scanf("%s", r.accountType);
-    clear_buffer();
+    getCharInput("\nEnter the country:",r.country,50);
+
+    r.phone = getIntInput("\nEnter the phone number:",10);
+    //check number
+
+    r.amount = getDoubleInput("\nEnter amount to deposit: $",15);
+   
+    getCharInput("\nChoose the type of account:\n\t-> saving\n\t-> current\n\t-> fixed01(for 1 year)\n\t-> fixed02(for 2 years)\n\t-> fixed03(for 3 years)\n\n\tEnter your choice:",r.accountType,10);
+    //check type
 
     int err = 0;
     sqlite3 *db = NULL;
     err = sqlite3_open("./data/database.db", &db);
-    if (err != 0)
-    {
+    if (err != 0){
         sqlite3_close(db);
         printf("ERROR OPEN DB\n");
         return exit(0);
     }
     err = InsertRecord(db, r, u.id, u.name);
-    if (err != 0)
-    {
+    if (err != 0){
         sqlite3_close(db);
         system("clear");
         printf("Number account alredy exec\n");
@@ -81,8 +75,7 @@ int InsertRecord(sqlite3 *db, struct Record r, int user_id, const char *userName
     snprintf(dateStr, sizeof(dateStr), "%02d/%02d/%04d", r.deposit.month, r.deposit.day, r.deposit.year);
     sqlite3_bind_text(stmt, 8, dateStr, -1, SQLITE_STATIC);
 
-    if (sqlite3_step(stmt) != SQLITE_DONE)
-    {
+    if (sqlite3_step(stmt) != SQLITE_DONE){
         printf("Number account alredy exec\n");
         return 1;
     }
@@ -126,9 +119,7 @@ void updateAcc(struct User u) {
         return;
     }
 
-    int accnb = 0;
-    printf("\nWhat is the account number you want to change: ");
-    scanf("%d", &accnb);
+    int accnb = getIntInput("\nWhat is the account number you want to change: ",10);
 
     err = checkAccountNumber(db, accnb, u.id);
     if (err != 1) {
@@ -137,28 +128,16 @@ void updateAcc(struct User u) {
         return;
     }
 
-    int nbr = 0;
-    printf("\nWhich information do you want to update?\n1 -> phone number\n2 -> country\n");
-    scanf("%d", &nbr);
+    int nbr = getIntInput("\nWhich information do you want to update?\n1 -> phone number\n2 -> country\n",3);
 
    switch (nbr) {
     case 1: {
         system("clear");
-        int newPhone = 0;
+        int newPhone = getIntInput("Enter the new phone number: ",10);
 
-        while (1) {
-            printf("Enter the new phone number: ");
-            scanf("%d", &newPhone);
-
-            if (isPhoneValid(newPhone)) {
-                break; 
-            } else {
-                printf("Phone number not valid, please try again.\n");
-            }
-        }
         err = UpdatePhone(db, newPhone, accnb);  
         if (err != 0) {
-            printf("The process failed.\n");
+            printf("failed update phone number\n");
             sqlite3_close(db);
             return;
         }
@@ -168,20 +147,11 @@ void updateAcc(struct User u) {
     case 2: {
         system("clear");
         char newCountry[50];
-
-        while (1) {
-            printf("Enter the new country: ");
-            scanf("%s", newCountry);
-
-            if (isCountryValid(newCountry)) {
-                break;  
-            } else {
-                printf("Country name not valid, please try again.\n");
-            }
-        }
+        getCharInput("Enter the new country: ",newCountry,50);
+      
         err = UpdateCountry(db, newCountry, accnb); 
         if (err != 0) {
-            printf("The process failed.\n");
+            printf("failed update country\n");
             sqlite3_close(db);
             return;
         }
@@ -193,7 +163,6 @@ void updateAcc(struct User u) {
         sqlite3_close(db);
         return;
     }
-    clear_buffer();
     sqlite3_close(db);
 }
 // check number number is in my acounts
@@ -203,7 +172,6 @@ int checkAccountNumber(sqlite3 *db, int accountNbr, int userid) {
     int exists = 0;
 
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK) {
-        //printf("error prepare sqlite\n");
         return -1;
     }
 
@@ -264,7 +232,6 @@ void CheckAccounts(struct User u){
     int err = 0;
     sqlite3 *db = NULL;
     
-    // Open the database
     err = sqlite3_open("./data/database.db", &db);
     if (err != 0) {
         printf("ERROR OPEN DB\n");
@@ -272,9 +239,7 @@ void CheckAccounts(struct User u){
        return;
     }
 
-    int accnb = 0;
-    printf("\nEnter account number: ");
-    scanf("%d", &accnb);
+    int accnb = getIntInput("\nEnter account number: ",10);
 
      system("clear");
     // Check if the account number exists
@@ -288,10 +253,9 @@ void CheckAccounts(struct User u){
 
     err = GetAccountInfo(db,accnb, 1);
     if (err != 0){
-        printf("cant get data acount\n");
+        printf("can't get data acount\n");
     }
 
-    clear_buffer();
     sqlite3_close(db);
    return;
 }
@@ -413,33 +377,22 @@ void MakeTransaction(struct User u){
        return;
     }
 
-    int accnb = 0;
-    printf("\nEnter account number: ");
-    scanf("%d", &accnb);
+    int accnb = getIntInput("\nEnter account number: ",10);
 
-     
     // Check if the account number exists
     err = checkAccountNumber(db, accnb, u.id);
     if (err != 1) {
         system("clear");
         printf("\nAccount number not found.\n");
         sqlite3_close(db);
-        Menuorexite(u);
+        return;
     }
-    int nbr = 0;
-    printf("\nWhich information do you want to update?\n1 -> withdraw\n2 -> deposit\n");
-    scanf("%d", &nbr);
+    int nbr = getIntInput("\nWhich information do you want to update?\n1 -> withdraw\n2 -> deposit\n",3);
+
     switch (nbr) {
     case 1: {
-        double amount = 0;
-
-        while (1) {
-            printf("Enter the amount you want to withdrow: $");
-            scanf("%lf", &amount);
-             if (amount != 0){
-                break;
-            }
-        }
+        double amount = getDoubleInput("Enter the amount you want to withdrow: $",15);
+        
         if(amount != 0){
          err = WithdrawDeposit(db,accnb,amount,0); 
          if (err != 0){
@@ -452,15 +405,8 @@ void MakeTransaction(struct User u){
         break;
     }
     case 2: {
-        double amount = 0;
+        double amount = getDoubleInput("Enter the amount you want to deposit: $",15);
 
-        while (1) {
-            printf("Enter the amount you want to deposit: $");
-            scanf("%lf", &amount);
-            if (amount != 0){
-                break;
-            }
-        }
         if(amount != 0){
            err = WithdrawDeposit(db,accnb,amount,1);
             if (err != 0){
@@ -476,8 +422,6 @@ void MakeTransaction(struct User u){
         sqlite3_close(db);
         return;
     }
-
-    clear_buffer();
     sqlite3_close(db);
 }
 
@@ -512,7 +456,6 @@ void RemoveAccount(struct User u){
      int err = 0;
     sqlite3 *db = NULL;
     
-    // Open the database
     err = sqlite3_open("./data/database.db", &db);
     if (err != 0) {
         printf("ERROR OPEN DB\n");
@@ -520,9 +463,7 @@ void RemoveAccount(struct User u){
        return;
     }
 
-    int accnb = 0;
-    printf("\nEnter account number: ");
-    scanf("%d", &accnb);
+    int accnb = getIntInput("\nEnter account number: ",10);
 
      system("clear");
     // Check if the account number exists
@@ -536,12 +477,11 @@ void RemoveAccount(struct User u){
     err = Remove(db,accnb);
     if(err){
         system("clear");
-        printf("\nfeald removw account.\n");
+        printf("\nfeald remove account.\n");
         sqlite3_close(db);
         return;
     }
     sqlite3_close(db);
-    clear_buffer();
     success(u);
 }
 
@@ -568,7 +508,6 @@ void TransferOwner(struct User u){
       int err = 0;
     sqlite3 *db = NULL;
     
-    // Open the database
     err = sqlite3_open("./data/database.db", &db);
     if (err != 0) {
         printf("ERROR OPEN DB\n");
@@ -576,32 +515,25 @@ void TransferOwner(struct User u){
        return;
     }
 
-    int accnb = 0;
-    printf("\nEnter account number you want to transfere ownership:");
-    scanf("%d", &accnb);
-    clear_buffer();
+    int accnb = getIntInput("\nEnter account number you want to transfere ownership:",10);
     
     // Check if the account number exists
     err = checkAccountNumber(db, accnb, u.id);
     if (err != 1) {
-        printf("\nAccount number not found.\n");
+        printf("\nAccount number not found\n");
         sqlite3_close(db);
         return;
     }
     err = GetAccountInfo(db,accnb,0);
     if (err != 0){
-        printf("\ncan not get account info\n");
+        printf("\ncan't get account info\n");
         sqlite3_close(db);
         return;
     }
      
     char nameuser[50];
-    printf("\nwhich user you transfer ownership to (user name):");
- //fgets(nameuser, sizeof(nameuser), stdin);
-    scanf("%s",nameuser);
-    printf("%s\n",nameuser);
-    clear_buffer();
-// check is alphabit
+    getCharInput("\nwhich user you transfer ownership to (user name):",nameuser,50);
+
     int id = GetIdbyName(db,nameuser);
     if(id == 0){
         printf("\nuser not found\n");
