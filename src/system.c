@@ -27,6 +27,7 @@ noAccount:
     scanf("%d", &r.accountNbr);
     printf("\nEnter the country:");
     scanf("%s", r.country);
+    //getInput(&r.country,50);
     printf("\nEnter the phone number:");
     scanf("%d", &r.phone);
     printf("\nEnter amount to deposit: $");

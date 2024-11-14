@@ -35,6 +35,8 @@ int isPhoneValid(int phone);
 int isCountryValid(char *country);
 void Menuorexite(struct User u);
 void success(struct User u);
+void getInput(char* buffer, int bufferSize);
+void clear_buffer();
 
 // system function
 void createNewAcc(struct User u);
@@ -45,7 +47,6 @@ void mainMenu(struct User u);
 void Login(struct User *u);
 void Registration(struct User *u);
 int isStrValid(const char *str);
-void clear_buffer();
 int isStrValid(const char *str);
 int ExecQuery(const char *query, int numArgs, ...);
 //void CreateNewAccount(struct User u);

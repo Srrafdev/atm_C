@@ -123,12 +123,12 @@ int main() {
 //         }
 //     }
 //     fclose(pf);
-//     success(u);
-// }
-
+//     success(u); 
+// } 
+    
 ===================================================================================================
 
-void getUserInput(char* buffer, int bufferSize) {
+void getUserInput(char* buffer, int bufferSize) { 
     if (fgets(buffer, bufferSize, stdin) != NULL) {
         
         int len = strlen(buffer);

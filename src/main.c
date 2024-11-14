@@ -4,13 +4,6 @@
 #include <ctype.h>
 #include <termios.h>
 
-
-
-void clear_buffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
-
 void mainMenu(struct User u){
     int option;
     

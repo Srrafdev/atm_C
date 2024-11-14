@@ -2,6 +2,11 @@
 #include <ctype.h>
 #include <stdio.h>
 
+void clear_buffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
 int isStrValid(const char *str){
     int i;
     if(strlen(str) > 49){
@@ -78,3 +83,15 @@ void success(struct User u){
         exit(0);
     }
 }
+
+void getInput(char* buffer, int bufferSize) { 
+    if (fgets(buffer, bufferSize, stdin) != NULL) {
+        
+        int len = strlen(buffer);
+        if (len > 0 && buffer[len - 1] == '\n') {
+            buffer[len - 1] = '\0';
+        }
+    }
+    clear_buffer();
+}
+
