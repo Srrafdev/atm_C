@@ -29,13 +29,12 @@ noAccount:
 
     r.amount = getDoubleInput("\nEnter amount to deposit: $",15);
    
+   type:
     getCharInput("\nChoose the type of account:\n\t-> saving\n\t-> current\n\t-> fixed01(for 1 year)\n\t-> fixed02(for 2 years)\n\t-> fixed03(for 3 years)\n\n\tEnter your choice:",r.accountType,10);
     err = isTypeAcountValid(r.accountType);
     if(err != 0){
-        system("clear");
-        printf("%d",err);
         printf("\naccount type not valid %s\n",r.accountType);
-        goto noAccount;
+        goto type;
     }
 
     sqlite3 *db = NULL;

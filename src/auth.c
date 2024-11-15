@@ -82,6 +82,8 @@ void getCharInput(const char* text, char* buffer, int size){
         }else{
             printf("\nchar no valid\n");
         }
+        int c;
+        while ((c = getchar()) != '\n' && c != EOF);
         }else{
             printf("\nError reading input.\n");
             break;
@@ -102,18 +104,22 @@ int getIntInput(const char* text, int size) {
             if (len > 0 && buffer[len - 1] == '\n') {
                 buffer[len - 1] = '\0';
             }
-
-            char* endptr;
-            value = strtol(buffer, &endptr, 10);
-
-            if (endptr == buffer) {
-                printf("input is not digits.\n");
-            } else if (*endptr != '\0') {
-                printf("invalid input: %c\n", *endptr);
-            }else{
-                clear_buffer();
-                return (int)value;
+            int is = 0;
+            for(int i = 0;i < len-1;i++){
+                if(isdigit(buffer[i])== 0){
+                    is = 1;
+                    break;
+                }
             }
+            if(is == 0 && len > 1){
+                clear_buffer();
+                return atoi(buffer);
+            }else{
+                printf("input is not digits.\n");
+            }
+           
+           int c;
+           while ((c = getchar()) != '\n' && c != EOF);
         } else {
             printf("\nError reading input.\n");
             break;
@@ -147,6 +153,8 @@ double getDoubleInput(const char* text, int size) {
                 clear_buffer();
                 return value;
             }
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF);
         } else {
             printf("\nError reading input.\n");
             break;
