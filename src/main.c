@@ -184,7 +184,7 @@ void Registration(struct User *u){
     if (err != 0){
         sqlite3_close(db);
         system("clear");
-        printf("name already exec\n");
+        printf("this user already exists\n");
         goto START;
     }
     sqlite3_stmt* stm;
