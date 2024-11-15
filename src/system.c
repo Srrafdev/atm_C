@@ -3,6 +3,7 @@
 
 void createNewAcc(struct User u){
     struct Record r;
+    int err = 0;
 
     system("clear");
 noAccount:
@@ -25,14 +26,18 @@ noAccount:
     getCharInput("\nEnter the country:",r.country,50);
 
     r.phone = getIntInput("\nEnter the phone number:",10);
-    //check number
 
     r.amount = getDoubleInput("\nEnter amount to deposit: $",15);
    
     getCharInput("\nChoose the type of account:\n\t-> saving\n\t-> current\n\t-> fixed01(for 1 year)\n\t-> fixed02(for 2 years)\n\t-> fixed03(for 3 years)\n\n\tEnter your choice:",r.accountType,10);
-    //check type
+    err = isTypeAcountValid(r.accountType);
+    if(err != 0){
+        system("clear");
+        printf("%d",err);
+        printf("\naccount type not valid %s\n",r.accountType);
+        goto noAccount;
+    }
 
-    int err = 0;
     sqlite3 *db = NULL;
     err = sqlite3_open("./data/database.db", &db);
     if (err != 0){
@@ -186,6 +191,7 @@ int checkAccountNumber(sqlite3 *db, int accountNbr, int userid) {
 
     return exists;
 }
+
 
 // update country
 int UpdateCountry(sqlite3 *db, const char *country, int accountNbr) {
@@ -369,7 +375,6 @@ void MakeTransaction(struct User u){
     int err = 0;
     sqlite3 *db = NULL;
     
-    // Open the database
     err = sqlite3_open("./data/database.db", &db);
     if (err != 0) {
         printf("ERROR OPEN DB\n");
@@ -387,6 +392,18 @@ void MakeTransaction(struct User u){
         sqlite3_close(db);
         return;
     }
+
+    //check acount type is not fixed
+     char *type;
+    getAccountType(db,accnb,type);
+    
+    if(strcmp(type,"saving") != 0 && strcmp(type,"current") != 0){
+        system("clear");
+        printf("\nyou cant make transection in account type %s.\n",type);
+        sqlite3_close(db);
+        return;
+    }
+
     int nbr = getIntInput("\nWhich information do you want to update?\n1 -> withdraw\n2 -> deposit\n",3);
 
     switch (nbr) {
@@ -423,6 +440,30 @@ void MakeTransaction(struct User u){
         return;
     }
     sqlite3_close(db);
+}
+
+void getAccountType(sqlite3 *db,int accNbr, char *type){
+      sqlite3_stmt *stmt;
+    const char *sql = "SELECT accountType FROM accounts WHERE accountNbr = ?;";
+
+    // Prepare the SQL statement
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Failed to prepare statement");
+        return;
+    }
+
+    sqlite3_bind_int(stmt, 1, accNbr);
+   
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        const unsigned char *accountType = sqlite3_column_text(stmt, 0);
+        if (accountType) {
+            strncpy(type, (const char *)accountType, 10 - 1);
+        } 
+    } else {
+        printf("No account found for accountNbr %d.\n", accNbr);
+    }
+
+    sqlite3_finalize(stmt);
 }
 
 int WithdrawDeposit(sqlite3 *db,int accountNbr,double amount, int pluMin){

@@ -29,6 +29,7 @@ struct User{
 
 // auth
 int isPhoneValid(int phone);
+int isTypeAcountValid(const char *type);
 void Menuorexite(struct User u);
 void success(struct User u);
 void getCharInput(const char* text, char* buffer, int size);
@@ -61,6 +62,7 @@ void checkAllAccounts(struct User u);
 // make transction
 void MakeTransaction(struct User u);
 int WithdrawDeposit(sqlite3 *db,int accountNbr,double amount, int pluMin);
+void getAccountType(sqlite3 *db,int accNbr, char *type);
 // remove account
 void RemoveAccount(struct User u);
 int Remove(sqlite3 *db,int accountNbr);

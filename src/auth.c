@@ -9,8 +9,18 @@ void clear_buffer() {
 }
 
 int isPhoneValid(int phone){
+    
     if (phone >= 100000000 && phone <= 999999999) {
         return 1; 
+    }
+    return 0;
+}
+
+int isTypeAcountValid(const char *type){
+    if(strcmp(type,"saving") != 0 && strcmp(type,"current") != 0 &&
+       strcmp(type,"fixed01") != 0 && strcmp(type,"fixed02") != 0 &&
+       strcmp(type,"fixed03") != 0){
+    return 1;
     }
     return 0;
 }
@@ -135,7 +145,7 @@ double getDoubleInput(const char* text, int size) {
                 printf("invalid input: %c\n", *endptr);
             }else{
                 clear_buffer();
-                return (int)value;
+                return value;
             }
         } else {
             printf("\nError reading input.\n");
