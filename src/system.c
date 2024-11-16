@@ -6,7 +6,7 @@ void createNewAcc(struct User u){
     int err = 0;
 
     system("clear");
-noAccount:
+date:
     printf("\t\t\t===== New record =====\n");
 
     printf("\nEnter today's date(mm/dd/yyyy):");
@@ -16,20 +16,30 @@ noAccount:
     scanf("%d/%d/%d", &r.deposit.month, &r.deposit.day, &r.deposit.year);
     clear_buffer();
     if (isValidDate(r.deposit) != 0){
-        system("clear");
         printf("date not valid\n");
-        goto noAccount;
+        goto date;
     }
 
     r.accountNbr = getIntInput("\nEnter the account number:",10);
 
+country:
     getCharInput("\nEnter the country:",r.country,50);
-
+    err = isAlphabit(r.country);
+    if(err != 0){
+        printf("\ncountry not valid %s\n",r.country);
+        goto country;
+    }
+phone:    
     r.phone = getIntInput("\nEnter the phone number:",10);
+    err = isPhoneValid(r.phone);
+    if(err != 0){
+        printf("\nphone not valid\n");
+        goto phone;
+    }
 
     r.amount = getDoubleInput("\nEnter amount to deposit: $",15);
    
-   type:
+type:
     getCharInput("\nChoose the type of account:\n\t-> saving\n\t-> current\n\t-> fixed01(for 1 year)\n\t-> fixed02(for 2 years)\n\t-> fixed03(for 3 years)\n\n\tEnter your choice:",r.accountType,10);
     err = isTypeAcountValid(r.accountType);
     if(err != 0){
@@ -48,8 +58,8 @@ noAccount:
     if (err != 0){
         sqlite3_close(db);
         system("clear");
-        printf("Number account alredy exec\n");
-        goto noAccount;
+        printf("your data not valid\n");
+        goto date;
     }
 
     sqlite3_close(db);
@@ -92,6 +102,9 @@ int isValidDate(struct Date date){
     int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
     if (date.year <= 0 || date.month <= 0 || date.day <= 0)
+        return 1;
+
+    if(date.year > 2050 || date.year <1900)
         return 1;
 
     if (date.month < 1 || date.month > 12)
@@ -409,10 +422,10 @@ void MakeTransaction(struct User u){
     case 1: {
         double amount = getDoubleInput("Enter the amount you want to withdrow: $",15);
         
-        if(amount != 0){
+        if(amount > 0){
          err = WithdrawDeposit(db,accnb,amount,0); 
          if (err != 0){
-            printf("not valid");
+            printf("amount not valid");
             return;
          }
         }
@@ -423,10 +436,10 @@ void MakeTransaction(struct User u){
     case 2: {
         double amount = getDoubleInput("Enter the amount you want to deposit: $",15);
 
-        if(amount != 0){
+        if(amount > 0){
            err = WithdrawDeposit(db,accnb,amount,1);
             if (err != 0){
-            printf("not valid");
+            printf("amount not valid");
             return;
          }
         }

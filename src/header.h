@@ -27,7 +27,7 @@ struct User{
     char password[50];
 };
 
-// auth
+// utils func
 int isPhoneValid(int phone);
 int isTypeAcountValid(const char *type);
 void Menuorexite(struct User u);
@@ -35,6 +35,7 @@ void success(struct User u);
 void getCharInput(const char* text, char* buffer, int size);
 int getIntInput(const char* prompt, int size);
 double getDoubleInput(const char* text, int size);
+int isAlphabit(const char* text);
 void clear_buffer();
 
 // system function

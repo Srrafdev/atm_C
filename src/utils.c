@@ -9,9 +9,17 @@ void clear_buffer() {
 }
 
 int isPhoneValid(int phone){
-    
-    if (phone >= 100000000 && phone <= 999999999) {
+    if (phone < 100000000 || phone > 1000000000) {
         return 1; 
+    }
+    return 0;
+}
+
+int isAlphabit(const char* text){
+     for(int i = 0; i < strlen(text); i++){
+        if(isalpha(text[i]) == 0){
+            return 1;
+        }
     }
     return 0;
 }

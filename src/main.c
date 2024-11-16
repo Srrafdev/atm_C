@@ -228,7 +228,7 @@ int main() {
                            "user_id INTEGER NOT NULL,"
                            "name_user TEXT NOT NULL,"
                            "country TEXT NOT NULL,"
-                           "phone TEXT NOT NULL,"
+                           "phone INTEGER NOT NULL,"
                            "accountType TEXT NOT NULL,"
                            "accountNbr INTEGER NOT NULL UNIQUE CHECK (amount BETWEEN 0 AND 9999999999),"
                            "amount INTEGER NOT NULL CHECK (amount BETWEEN 0 AND 9999999999),"
