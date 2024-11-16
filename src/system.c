@@ -394,7 +394,7 @@ void MakeTransaction(struct User u){
        return;
     }
 
-    int accnb = getIntInput("\nEnter account number: ",10);
+    int accnb = getIntInput("\nEnter account number:",10);
 
     // Check if the account number exists
     err = checkAccountNumber(db, accnb, u.id);
@@ -404,9 +404,7 @@ void MakeTransaction(struct User u){
         sqlite3_close(db);
         return;
     }
-
-    //check acount type is not fixed
-     char *type;
+    char type[10];
     getAccountType(db,accnb,type);
     
     if(strcmp(type,"saving") != 0 && strcmp(type,"current") != 0){
@@ -428,9 +426,11 @@ void MakeTransaction(struct User u){
             printf("amount not valid");
             return;
          }
+        success(u);
+        }else{
+            printf("amount not valid\n");
         }
        
-        success(u);
         break;
     }
     case 2: {
@@ -439,11 +439,13 @@ void MakeTransaction(struct User u){
         if(amount > 0){
            err = WithdrawDeposit(db,accnb,amount,1);
             if (err != 0){
-            printf("amount not valid");
+            printf("amount not valid\n");
             return;
          }
-        }
         success(u);
+        }else{
+            printf("amount not valid\n");
+        }
         break;
     }
     default:

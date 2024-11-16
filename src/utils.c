@@ -102,7 +102,6 @@ void getCharInput(const char* text, char* buffer, int size){
 
 int getIntInput(const char* text, int size) {
     char buffer[size];
-    long value;
 
     while (1) {
         printf("%s", text);
@@ -126,8 +125,8 @@ int getIntInput(const char* text, int size) {
                 printf("input is not digits.\n");
             }
            
-           int c;
-           while ((c = getchar()) != '\n' && c != EOF);
+        //    int c;
+        //    while ((c = getchar()) != '\n' && c != EOF);
         } else {
             printf("\nError reading input.\n");
             break;
@@ -138,7 +137,7 @@ int getIntInput(const char* text, int size) {
 }
 
 double getDoubleInput(const char* text, int size) {
-     char buffer[size];
+    char buffer[size];
     double value;
 
     while (1) {
