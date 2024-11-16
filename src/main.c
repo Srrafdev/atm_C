@@ -230,7 +230,7 @@ int main() {
                            "country TEXT NOT NULL,"
                            "phone INTEGER NOT NULL,"
                            "accountType TEXT NOT NULL,"
-                           "accountNbr INTEGER NOT NULL UNIQUE CHECK (amount BETWEEN 1 AND 9999999999),"
+                           "accountNbr INTEGER NOT NULL UNIQUE CHECK (amount BETWEEN 0 AND 9999999999),"
                            "amount INTEGER NOT NULL CHECK (amount BETWEEN 1 AND 9999999999),"
                            "detposit TEXT ,"
                            "withdraw TEXT,"
